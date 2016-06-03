@@ -59,7 +59,8 @@ lazy val commonDependencies = Seq(
   "org.slf4j" % "jcl-over-slf4j" % "1.7.7",
   "ch.qos.logback" % "logback-classic" % "1.1.3",
   "com.iheart" %% "ficus" % "1.2.3",
-  "ch.qos.logback" % "logback-classic" % "1.1.3"
+  "ch.qos.logback" % "logback-classic" % "1.1.3",
+  "org.yaml" % "snakeyaml" % "1.17"
 )
 
 lazy val testDependencies = Seq(
