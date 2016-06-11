@@ -62,7 +62,8 @@ lazy val commonDependencies = Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.3",
   "com.iheart" %% "ficus" % "1.2.3",
   "ch.qos.logback" % "logback-classic" % "1.1.3",
-  "org.yaml" % "snakeyaml" % "1.19-SNAPSHOT"
+  "org.yaml" % "snakeyaml" % "1.19-SNAPSHOT",
+  "org.typelevel" %% "cats" % "0.6.0"
 )
 
 lazy val testDependencies = Seq(
