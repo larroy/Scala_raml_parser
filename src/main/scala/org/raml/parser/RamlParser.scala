@@ -4,12 +4,11 @@ package org.raml.parser
 import java.io.Reader
 
 import org.raml.domain.Api
-import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.{ObjectAndNodes, Yaml}
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.{MappingNode, Node}
 
 import scala.collection.JavaConverters._
-
 import java.util.{Map ⇒ JMap}
 
 /**
@@ -32,20 +31,10 @@ import java.util.{Map ⇒ JMap}
   * <org.yaml.snakeyaml.events.StreamEndEvent()>
   * }}}
   */
-class Ctor extends SafeConstructor {
-  def construct(node: Node): Any = {
-    constructObject(node)
-  }
 
-}
-
-class RamlParser extends Yaml(new Ctor()) {
-  val ctor = constructor.asInstanceOf[Ctor]
-  def construct(node: Node): Any = ctor.construct(node)
-
-  def apply(reader: Reader): Unit = {
-    val root: Node = compose(reader)
-    val mappingNode = root.asInstanceOf[MappingNode]
-    val map: Map[String, Any] = construct(mappingNode).asInstanceOf[JMap[String, Any]].asScala
+class RamlParser {
+  def apply(content: String): Unit = {
+    val yaml = new Yaml(SafeConstructor())
+    val objectAndNodes: ObjectAndNodes = yaml.loadWithNodes(content)
   }
 }

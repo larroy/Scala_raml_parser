@@ -12,7 +12,9 @@ lazy val commonSettings = Seq(
     "-Xlint"
 
   ),
-  resolvers ++= Seq(Resolver.sonatypeRepo("releases"),
+  resolvers ++= Seq(
+    Resolver.mavenLocal,
+    Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots"),
     Resolver.bintrayRepo("scalaz", "releases"),
     Resolver.bintrayRepo("megamsys", "scala"),
@@ -60,7 +62,7 @@ lazy val commonDependencies = Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.3",
   "com.iheart" %% "ficus" % "1.2.3",
   "ch.qos.logback" % "logback-classic" % "1.1.3",
-  "org.yaml" % "snakeyaml" % "1.17"
+  "org.yaml" % "snakeyaml" % "1.19-SNAPSHOT"
 )
 
 lazy val testDependencies = Seq(
