@@ -27,7 +27,7 @@ class RamlParser {
     We also have the SnakeYaml Nodes to keep a reference to the position in the file and the base Yaml tree.
      */
     val objectAndNodes: ObjectAndNodes = yaml.loadWithNodes(content)
-    val validApi: ValidatedNel[ParserError, Api] = ApiParser(objectAndNodes)
+    val validApi: ValidatedNel[ParserError, Api] = new ApiParser(objectAndNodes)()
     validApi
   }
 }
