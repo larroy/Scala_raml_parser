@@ -52,7 +52,7 @@ class ProtocolsSpec extends Specification {
     val result = ramlParser(spec)
     result.isValid should beFalse
     // TODO: check the error exist and complains about the protocol
-    val x: NonEmptyList[ParserError] = result.fold(x⇒x, _⇒ null)
+    val x: NonEmptyList[ParserError] = result.fold(x⇒x, _⇒ sys.error("not possible"))
     x.head.error must beEqualTo("Invalid protocol FTP")
   }
 }
