@@ -1,14 +1,18 @@
 package org.raml.parser
 
+import java.util
+
 import cats.data.Validated.{Invalid, Valid}
-import cats.data.{NonEmptyList, Validated, ValidatedNel}
+import cats.data.{NonEmptyList, Validated, ValidatedNel, Xor}
 import org.raml.domain.{Api, Method, Resource}
 import org.yaml.snakeyaml.ObjectAndNodes
 import java.util.{Map ⇒ JMap}
+import java.util.ArrayList
 
 import scala.collection.mutable
 import scala.collection.immutable.IndexedSeq
 import scala.reflect.ClassTag
+import java.net.URI
 
 //import cats._
 //import cats.syntax.eq._
@@ -28,16 +32,43 @@ class ApiParser(objectAndNodes: ObjectAndNodes) {
 
   def apply(): ValidatedNel[ParserError, Api] = {
     parse[String](root, "title", { s ⇒ api = api.copy(title = s) })
-    parseOptional[String](root, "description", { s ⇒ api = api.copy(description = s) })
-    parseOptional[String](root, "version", { s ⇒ api = api.copy(description = s) })
-    parseOptional[String](root, "baseUri", { s ⇒ api = api.copy(description = s) })
+    parseOptional[String](root, "baseUri", { s ⇒ api = api.copy(baseUri = s) })
 
+    val description = parseOption[String](root, "description")
+    val version = parseOption[String](root, "version")
+    val baseUri = parseOption[String](root, "baseUri")
+    api = api.copy(
+      description = description.getOrElse(""),
+      version = version.getOrElse(""),
+      baseUri = baseUri.getOrElse("")
+    )
     api = api.copy(resources = parseMatching(root, isResourceKey, parseResource))
+    api = api.copy(protocols = protocols(root, baseUri))
 
     if (parsingErrors.nonEmpty)
       Invalid(NonEmptyList(parsingErrors.head, parsingErrors.tail))
     else
       Valid(api)
+  }
+
+  /**
+    * @return API protocols
+    */
+  def protocols(root: MapT, baseUri: Option[String]): IndexedSeq[String] = {
+    var protocols: Set[String] = parseOption[ArrayList[String]](root, "protocols").map(_.asScala.toSet).getOrElse(Set.empty[String])
+    baseUri.foreach { uri ⇒
+      protocols = protocols + uri.split(":")(0)
+    }
+    val invalid = protocols.filterNot(validProtocol)
+    invalid.foreach { protocol ⇒
+      parsingErrors = parsingErrors :+ ParserError(s"Invalid protocol $protocol")
+    }
+    protocols.map(_.toLowerCase).toIndexedSeq
+  }
+
+  def validProtocol(protocol: String): Boolean = protocol match {
+    case s: String if s matches "(?i)(http|https)" ⇒ true
+    case _ ⇒ false
   }
 
   /**
@@ -94,6 +125,18 @@ class ApiParser(objectAndNodes: ObjectAndNodes) {
           parsingErrors = parsingErrors :+ ParserError(e.toString, object2node.get(value))
       }
     }
+  }
+
+  def parseOption[T](xs: MapT, key: String): Option[T] = {
+    xs.get(key).foreach { value ⇒
+      try {
+        return Some(value.asInstanceOf[T])
+      } catch {
+        case e: ClassCastException ⇒
+          parsingErrors = parsingErrors :+ ParserError(e.toString, object2node.get(value))
+      }
+    }
+    return None
   }
 
   /**
